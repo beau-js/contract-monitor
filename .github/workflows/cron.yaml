@@ -13,5 +13,5 @@ jobs:
         with:
           url: 'https://trading-straregy.vercel.app/api/larkRobotInteraction'
           method: 'POST'
-          data: '{"password": "Btc2023"}'
+          data: '{"key": "TRIGGER_ALARM_SYSTEM_KEY"}'
           contentType: 'application/json'
