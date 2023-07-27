@@ -13,4 +13,4 @@ jobs:
         with:
           url: 'https://trading-strategy.vercel.app/api/larkRobotInteraction'
           method: 'POST'
-          bearerToken: ${{secrets.BEARER_TOKEN}}
+          data: '{"key":"${{secrets.BEARER_TOKEN}}"}'
