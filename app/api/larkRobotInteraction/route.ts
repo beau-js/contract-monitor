@@ -2,7 +2,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-07-20 14:43:45
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-27 18:25:08
+ * @LastEditTime: 2023-07-27 18:54:13
  * @FilePath: /WorkSpace/trading-straregy/app/api/larkRobotInteraction/route.ts
  * @Description:
  *
@@ -31,10 +31,6 @@ export async function POST() {
     try {
       const res = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex`);
       const data = await res.json();
-      console.log(`res`);
-      console.log(res);
-      console.log(`data`);
-      console.log(data);
       return data;
     } catch (error) {
       console.log(`错误` + error);
