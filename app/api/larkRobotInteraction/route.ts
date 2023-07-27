@@ -2,7 +2,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-07-20 14:43:45
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-27 16:53:58
+ * @LastEditTime: 2023-07-27 17:03:45
  * @FilePath: /WorkSpace/trading-straregy/app/api/larkRobotInteraction/route.ts
  * @Description:
  *
@@ -11,14 +11,6 @@
 
 // /app/api/larkRobotInteraction/route.js
 import { NextResponse } from 'next/server';
-// import cron from 'node-cron';
-
-// cron.schedule('01,16,31,46 * * * *', async () => {
-//   const date = new Date();
-//   const hongKongTime = date.toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong' });
-//   console.log(`Current Hong Kong time: ${hongKongTime}`);
-//   await POST();
-// });
 
 export async function POST() {
   interface BinanceFundingRateData {
@@ -26,18 +18,12 @@ export async function POST() {
     lastFundingRate: string;
   }
 
-  interface FilterDataItem {
-    symbol: string;
-    lastFundingRate: string;
-    openInterestStatistics: string;
-    contractPositionGrowth: string;
-    timestamp: string;
-  }
-
   const getBinanceFundingRateData = async () => {
     try {
       const res = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex`);
       const data = await res.json();
+      console.log(`res` + res);
+      console.log(`data` + data);
       return data;
     } catch (error) {
       console.log(error);
