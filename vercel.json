@@ -3,7 +3,7 @@
   "crons": [
     {
       "path": "/api/larkRobotInteraction",
-      "schedule": "0 7 * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
