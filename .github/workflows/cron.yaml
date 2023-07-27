@@ -1,13 +1,17 @@
-name: hourly-cron
+name: Trigger post
+
 on:
   schedule:
     - cron: '1,16,31,46 * * * *'
+
 jobs:
-  cron:
+  trigger-function:
     runs-on: ubuntu-latest
     steps:
-      - name: Call our API route
-        run: |
-          curl --request POST \
-            --url 'https://trading-straregy.vercel.app/api/larkRobotInteraction' \
-            --header 'Authorization: Bearer ${{ secrets.API_SECRET_KEY }}'
+      - name: HTTP Request Action
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: 'https://trading-straregy.vercel.app/api/larkRobotInteraction'
+          method: 'POST'
+          data: '{"password": "Btc2023"}'
+          contentType: 'application/json'
