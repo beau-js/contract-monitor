@@ -2,7 +2,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-07-20 14:43:45
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-27 18:54:13
+ * @LastEditTime: 2023-07-27 21:05:08
  * @FilePath: /WorkSpace/trading-straregy/app/api/larkRobotInteraction/route.ts
  * @Description:
  *
@@ -11,15 +11,6 @@
 
 // /app/api/larkRobotInteraction/route.js
 import { NextResponse } from 'next/server';
-
-import cron from 'node-cron';
-
-cron.schedule('01,16,31,46 * * * *', async () => {
-  const date = new Date();
-  const hongKongTime = date.toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong' });
-  console.log(`Current Hong Kong time: ${hongKongTime}`);
-  await POST();
-});
 
 export async function POST() {
   interface BinanceFundingRateData {
