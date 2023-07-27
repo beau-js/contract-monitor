@@ -24,10 +24,6 @@ interface Request {
 }
 
 export async function POST(request: Request) {
-  if (request?.body?.key !== process.env.BEARER_TOKEN) {
-    return NextResponse.json({ error: `Invalid Key` });
-  }
-
   const getBinanceFundingRateData = async () => {
     try {
       const res = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex`);
