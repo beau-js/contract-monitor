@@ -11,7 +11,7 @@ jobs:
       - name: HTTP Request Action
         uses: fjogeleit/http-request-action@master
         with:
-          url: 'https://trading-straregy.vercel.app/api/larkRobotInteraction'
+          url: 'https://trading-strategy.vercel.app/api/larkRobotInteraction'
           method: 'POST'
-          data: '{"key": ${{ secrets.TRIGGER_ALARM_SYSTEM_KEY }}'
-          contentType: 'application/json'
+          headers: '{"Content-Type": "application/json"}'
+          body: '{"key": ${{ secrets.TRIGGER_ALARM_SYSTEM_KEY }}}'
