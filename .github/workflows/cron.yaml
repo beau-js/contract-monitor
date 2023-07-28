@@ -14,4 +14,3 @@ jobs:
           url: 'https://trading-straregy.vercel.app/api/larkRobotInteraction'
           method: 'POST'
           data: '{"key":"${{secrets.BEARER_TOKEN}}"}'
-          bearerToken: '${{secrets.BEARER_TOKEN}}'
