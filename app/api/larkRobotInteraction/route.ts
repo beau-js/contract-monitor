@@ -2,7 +2,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-07-20 14:43:45
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-28 14:15:38
+ * @LastEditTime: 2023-07-28 14:45:09
  * @FilePath: /WorkSpace/trading-straregy/app/api/larkRobotInteraction/route.ts
  * @Description:
  *
@@ -16,17 +16,14 @@ interface BinanceFundingRateData {
   symbol: string;
   lastFundingRate: string;
 }
-interface Request {
-  body: {
-    key: string;
-  };
-}
 
-export async function POST(request: NextRequest | Request) {
-  const { key } = request.body as { key: string };
+export async function POST(request: Request) {
+  const key = (request.body as { key: string } | null)?.key;
+
   if (key !== process.env.BEARER_TOKEN) {
     return NextResponse.json({ msg: `Invalid Token` }, { status: 401 });
   }
+
   const getBinanceFundingRateData = async () => {
     try {
       const res = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex`);
