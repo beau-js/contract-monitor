@@ -2,7 +2,7 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-28 18:09:29
+ * @LastEditTime: 2023-07-28 19:29:24
  * @FilePath: /WorkSpace/trading-straregy/app/page.tsx
  * @Description:
  *
@@ -10,6 +10,7 @@
  */
 'use client';
 import { useEffect, useState } from 'react';
+import { GetStaticProps } from 'next';
 
 const Home = () => {
   const [data, setData] = useState([]);
