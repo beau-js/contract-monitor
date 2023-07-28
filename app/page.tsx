@@ -2,15 +2,15 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-28 19:29:24
+ * @LastEditTime: 2023-07-28 20:01:01
  * @FilePath: /WorkSpace/trading-straregy/app/page.tsx
  * @Description:
  *
  * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
  */
 'use client';
+
 import { useEffect, useState } from 'react';
-import { GetStaticProps } from 'next';
 
 const Home = () => {
   const [data, setData] = useState([]);
