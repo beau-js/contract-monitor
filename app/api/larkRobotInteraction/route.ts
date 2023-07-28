@@ -2,7 +2,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-07-20 14:43:45
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-28 18:40:06
+ * @LastEditTime: 2023-07-28 18:46:23
  * @FilePath: /WorkSpace/trading-straregy/app/api/larkRobotInteraction/route.ts
  * @Description:
  *
@@ -111,17 +111,15 @@ export async function POST() {
 
   if (Array.isArray(getFilterData) && getFilterData.length > 0) {
     const strFilterData = getFilterData.map((item) => {
-      if (item) {
-        return `
+      return `
           代币名称: ${item.symbol};
           资金费率: ${item.lastFundingRate};
           24H合约增长量: ${item.contractPositionGrowth};
           合约持仓市值: ${item.openInterestStatistics};
           更新时间: ${item.timestamp}
           `;
-      }
     });
-
+    console.log(strFilterData);
     const LarkData = {
       msg_type: 'text',
       content: {
