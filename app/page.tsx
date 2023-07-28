@@ -2,7 +2,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-07-19 18:08:29
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-28 13:29:56
+ * @LastEditTime: 2023-07-28 14:08:46
  * @FilePath: /WorkSpace/trading-straregy/app/page.tsx
  * @Description:
  *
