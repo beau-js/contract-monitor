@@ -2,7 +2,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-07-20 14:43:45
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-28 19:58:42
+ * @LastEditTime: 2023-07-28 20:01:39
  * @FilePath: /WorkSpace/trading-straregy/app/api/larkRobotInteraction/route.ts
  * @Description:
  *
@@ -129,7 +129,7 @@ export async function POST(request: Request) {
     };
 
     try {
-      const postLarkRes = await fetch(process.env.TEST_LARK_HOOK_URL as string, {
+      const postLarkRes = await fetch(process.env.LARK_HOOK_URL as string, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
