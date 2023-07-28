@@ -2,7 +2,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-07-20 14:43:45
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-28 15:57:19
+ * @LastEditTime: 2023-07-28 18:30:31
  * @FilePath: /WorkSpace/trading-straregy/app/api/larkRobotInteraction/route.ts
  * @Description:
  *
@@ -17,21 +17,14 @@ interface BinanceFundingRateData {
   lastFundingRate: string;
 }
 
-export async function POST(request: Request) {
-  const jsonRequest = await request.json();
-  const jsonKey = jsonRequest.body.key;
-
-  if (jsonKey !== process.env.BEARER_TOKEN) {
-    return NextResponse.json({ msg: `Invalid Token`, request: jsonRequest, body: jsonRequest.body }, { status: 401 });
-  }
-
+export async function GET(request: Request) {
   const getBinanceFundingRateData = async () => {
     try {
       const res = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex`);
       const data = await res.json();
       return data;
     } catch (error) {
-      console.log(`错误` + error);
+      console.log(error);
       setTimeout(getBinanceFundingRateData, 60000);
     }
   };
@@ -64,7 +57,7 @@ export async function POST(request: Request) {
   );
 
   // 筛选符合条件的资金费率币种
-  if (filterFundingRateData.length === 0) {
+  if (!Array.isArray(filterFundingRateData) || filterFundingRateData.length === 0) {
     return NextResponse.json({ msg: `No Tokens Meet The Funding Rate Alarm` });
   }
 
@@ -98,44 +91,69 @@ export async function POST(request: Request) {
               'Asia/Shanghai'
             ),
           };
+        } else {
+          return null;
         }
       })
     )
   ).filter(Boolean);
 
-  if (filterData.length === 0) {
+  if (Array.isArray(filterData) && filterData.length > 0) {
+    return NextResponse.json(filterData);
+  } else {
     return NextResponse.json({ msg: `No Tokens Meet The 24h Contract Position Growth Conditions` });
   }
+}
 
-  const strFilterData = filterData.map((item) => {
-    if (item) {
-      return `
-        代币名称: ${item.symbol};
-        资金费率: ${item.lastFundingRate};
-        24H合约增长量: ${item.contractPositionGrowth};
-        合约持仓市值: ${item.openInterestStatistics};
-        更新时间: ${item.timestamp}
-        `;
+export async function POST(request: Request) {
+  // const jsonRequest = await request.json();
+  // const jsonKey = jsonRequest.body.key;
+
+  // if (jsonKey !== process.env.BEARER_TOKEN) {
+  //   return NextResponse.json({ msg: `Invalid Token`, request: jsonRequest, body: jsonRequest.body }, { status: 401 });
+  // }
+
+  const getFilterResponse = await GET(request);
+  const getFilterData = await getFilterResponse.json();
+
+  if (Array.isArray(getFilterData) && getFilterData.length > 0) {
+    const strFilterData = getFilterData.map((item) => {
+      if (item) {
+        return `
+          代币名称: ${item.symbol};
+          资金费率: ${item.lastFundingRate};
+          24H合约增长量: ${item.contractPositionGrowth};
+          合约持仓市值: ${item.openInterestStatistics};
+          更新时间: ${item.timestamp}
+          `;
+      }
+    });
+
+    const LarkData = {
+      msg_type: 'text',
+      content: {
+        text: `行情警报:
+          ${JSON.parse(JSON.stringify(strFilterData)).join('')}`,
+      },
+    };
+
+    try {
+      const postLarkRes = await fetch(process.env.TEST_LARK_HOOK_URL as string, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(LarkData),
+      });
+
+      const postLarkData = await postLarkRes.json();
+      console.log(postLarkData);
+
+      return NextResponse.json(getFilterData);
+    } catch (error) {
+      console.log(error);
     }
-  });
-
-  const LarkData = {
-    msg_type: 'text',
-    content: {
-      text: `行情警报:
-        ${JSON.parse(JSON.stringify(strFilterData)).join('')}`,
-    },
-  };
-
-  const postLarkRes = await fetch(process.env.LARK_HOOK_URL as string, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(LarkData),
-  });
-
-  const postLarkData = await postLarkRes.json();
-
-  return NextResponse.json(postLarkData);
+  } else {
+    return getFilterData;
+  }
 }
