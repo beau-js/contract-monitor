@@ -2,7 +2,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-07-20 14:43:45
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-28 13:43:38
+ * @LastEditTime: 2023-07-28 14:15:38
  * @FilePath: /WorkSpace/trading-straregy/app/api/larkRobotInteraction/route.ts
  * @Description:
  *
@@ -10,7 +10,6 @@
  */
 
 // /app/api/larkRobotInteraction/route.js
-import { request } from 'http';
 import { NextResponse, NextRequest } from 'next/server';
 
 interface BinanceFundingRateData {
@@ -23,8 +22,8 @@ interface Request {
   };
 }
 
-export async function POST(request: Request) {
-  const { key } = request.body;
+export async function POST(request: NextRequest | Request) {
+  const { key } = request.body as { key: string };
   if (key !== process.env.BEARER_TOKEN) {
     return NextResponse.json({ msg: `Invalid Token` }, { status: 401 });
   }
