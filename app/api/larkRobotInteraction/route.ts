@@ -2,7 +2,7 @@
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-07-20 14:43:45
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-30 15:49:41
+ * @LastEditTime: 2023-07-30 19:49:25
  * @FilePath: /WorkSpace/trading-strategy/app/api/larkRobotInteraction/route.ts
  * @Description:
  *
@@ -108,8 +108,6 @@ export async function GET() {
 export async function POST(request: Request) {
   const getFilterResponse = await GET();
   const getFilterData = await getFilterResponse.json();
-  console.log(`getFilterData`);
-  console.log(getFilterData);
 
   if (Array.isArray(getFilterData) && getFilterData.length > 0) {
     const strFilterData = getFilterData.map((item) => {
@@ -147,6 +145,8 @@ export async function POST(request: Request) {
       console.log(error);
     }
   } else {
+    console.log(getFilterData);
+
     return NextResponse.json(getFilterData);
   }
 }

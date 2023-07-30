@@ -2,7 +2,7 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-30 16:25:54
+ * @LastEditTime: 2023-07-30 19:24:06
  * @FilePath: /WorkSpace/trading-strategy/app/page.tsx
  * @Description:
  *
@@ -16,10 +16,7 @@ const Home = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    fetch(`api/larkRobotInteraction`, {
-      method: `POST`,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    fetch(`api/larkRobotInteraction`)
       .then((res) => res.json())
       .then((data) => {
         setData(data);
