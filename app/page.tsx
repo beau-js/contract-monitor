@@ -2,7 +2,7 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-30 16:17:31
+ * @LastEditTime: 2023-07-30 16:25:54
  * @FilePath: /WorkSpace/trading-strategy/app/page.tsx
  * @Description:
  *
@@ -25,8 +25,6 @@ const Home = () => {
         setData(data);
       });
   }, []);
-
-  console.log(data);
 
   return (
     <div>
