@@ -1,49 +1,199 @@
 /*
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
- * @LastEditTime: 2023-10-09 00:33:15
- * @FilePath: /workspace/binance_contract_monitor/app/page.tsx
+ * @LastEditors: Beau pg.beau@outlook.com
+ * @LastEditTime: 2023-10-09 04:43:19
+ * @FilePath: /workspace/binance_contract_monitor_dev/app/page.tsx
  * @Description:
  *
  * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
  */
-'use client';
+// app/page.tsx
+const Home = async () => {
+  interface BinanceMarkPriceInfo {
+    symbol: string;
+  }
+  interface BinanceOpenInterestStatistics {
+    symbol: string;
+    sumOpenInterest: string;
+    sumOpenInterestValue: string;
+    timestamp: string;
+    contractPositionGrowth: number;
+  }
 
-import { useEffect, useState } from 'react';
+  const fetchBinanceMarkPriceInfo = async (symbol: string) => {
+    try {
+      const results = await fetch(
+        `https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${symbol}`,
+        {
+          next: { revalidate: 60 },
+        }
+      );
+      const data = await results.json();
+      return data;
+    } catch (error) {
+      console.log({ msg: 'fetchBinanceMarkPriceInfo Error', error });
+    }
+  };
 
-const Home = () => {
-  const [data, setData] = useState([]);
+  const fetchBinanceOpenInterestStatistics = async (symbol: string) => {
+    try {
+      const results = await fetch(
+        `https://fapi.binance.com/futures/data/openInterestHist?symbol=${symbol}&period=5m&limit=289`,
+        {
+          next: { revalidate: 60 },
+        }
+      );
+      const data = await results.json();
+      return data;
+    } catch (error) {
+      console.log({ msg: 'fetchBinanceOpenInterestStatistics Error', error });
+    }
+  };
 
-  useEffect(() => {
-    fetch(`api/larkRobotInteraction`)
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-      });
-  }, []);
+  const convertTZ = (timestamp: string, tzString: string) => {
+    // 将timestamp转换成Date对象，并乘以1000，因为JavaScript的时间戳是毫秒为单位
+    const date = new Date(timestamp);
+    // 使用toLocaleString方法，指定时区为tzString，并返回结果
+    return date.toLocaleString('zh-CN', { timeZone: tzString });
+  };
+
+  const BINANCE_MARK_PRICE_INFO: BinanceMarkPriceInfo[] =
+    await fetchBinanceMarkPriceInfo('');
+
+  const ALL_TRADING_PAIRS = BINANCE_MARK_PRICE_INFO.map(({ symbol }) => {
+    return symbol;
+  });
+
+  const TOKEN_PAIRS_WITH_HIGH_GROWTH_RATE = (
+    await Promise.all(
+      ALL_TRADING_PAIRS.map(async (symbol) => {
+        const DATA: BinanceOpenInterestStatistics[] =
+          await fetchBinanceOpenInterestStatistics(symbol);
+        const OLDEST_OPEN_INTEREST_STATISTICS = DATA[0];
+
+        const LATEST_OPEN_INTEREST_STATISTICS = DATA[DATA.length - 1];
+
+        const OPEN_INTEREST_POSITION_GROWTH_RATE =
+          (Number(LATEST_OPEN_INTEREST_STATISTICS?.sumOpenInterestValue) -
+            Number(OLDEST_OPEN_INTEREST_STATISTICS?.sumOpenInterestValue)) /
+          Number(OLDEST_OPEN_INTEREST_STATISTICS?.sumOpenInterestValue);
+
+        if (OPEN_INTEREST_POSITION_GROWTH_RATE >= 0.4) {
+          return {
+            ...LATEST_OPEN_INTEREST_STATISTICS,
+            contractPositionGrowth: OPEN_INTEREST_POSITION_GROWTH_RATE,
+          };
+        } else {
+          return null;
+        }
+      })
+    )
+  ).filter((item): item is BinanceOpenInterestStatistics => Boolean(item));
+  let finalData;
+
+  if (TOKEN_PAIRS_WITH_HIGH_GROWTH_RATE.length === 0) {
+    finalData = 'no data';
+  } else {
+    finalData = await Promise.all(
+      TOKEN_PAIRS_WITH_HIGH_GROWTH_RATE.map(
+        async ({
+          symbol,
+          sumOpenInterest,
+          sumOpenInterestValue,
+          contractPositionGrowth,
+          timestamp,
+        }) => {
+          const MARK_PRICE_DATA = await fetchBinanceMarkPriceInfo(symbol);
+          return {
+            symbol,
+            sumOpenInterest: Number(sumOpenInterest).toFixed(4),
+            sumOpenInterestValue: Number(sumOpenInterestValue).toFixed(4),
+            contractPositionGrowth:
+              (contractPositionGrowth * 100).toFixed(2) + '%',
+            lastFundingRate:
+              (Number(MARK_PRICE_DATA.lastFundingRate) * 100).toFixed(2) + '%',
+            timestamp: convertTZ(timestamp, 'Asia/Shanghai'),
+          };
+        }
+      )
+    );
+  }
+
+  if (Array.isArray(finalData)) {
+    const LARK_DATA = finalData.map(
+      ({
+        symbol,
+        contractPositionGrowth,
+        sumOpenInterestValue,
+        lastFundingRate,
+        timestamp,
+      }) => {
+        return `
+        交易币对：${symbol}
+        24H合约持仓量: ${contractPositionGrowth}
+        合约持仓价值: ${sumOpenInterestValue}
+        资金费率: ${lastFundingRate}
+        更新时间：${timestamp}
+        `;
+      }
+    );
+
+    const POST_LARK_DATA = {
+      msg_type: 'text',
+      content: {
+        text: `行情警报:
+            ${JSON.parse(JSON.stringify(LARK_DATA)).join('')}`,
+      },
+    };
+
+    try {
+      const POST_LARK_RES = await fetch(
+        process.env.LARK_HOOK_URL_DEV as string,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(POST_LARK_DATA),
+        }
+      );
+
+      const DATA = await POST_LARK_RES.json();
+
+      console.log(DATA);
+    } catch (error) {
+      console.log({ msg: 'Post Lark Error', error });
+    }
+  }
 
   return (
     <div>
       <h1 className="m-6">符合交易策略代币</h1>
-      {Array.isArray(data) &&
-        data.map(
+
+      {Array.isArray(finalData) ? (
+        finalData.map(
           ({
             symbol,
-            lastFundingRate,
-            openInterestStatistics,
+            sumOpenInterestValue,
             contractPositionGrowth,
+            lastFundingRate,
             timestamp,
-          }) => (
-            <ul key={symbol} className="list-none mx-12 my-6">
-              <li>代币：{symbol}</li>
-              <li>资金费率：{lastFundingRate}</li>
-              <li>24H合约持仓增长量: {contractPositionGrowth}</li>
-              <li>合约市值：{openInterestStatistics}</li>
-              <li>更新时间：{timestamp}</li>
-            </ul>
-          )
-        )}
+          }) => {
+            return (
+              <ul key={symbol} className="list-none mx-12 my-6">
+                <li>{`交易对:${symbol}`}</li>
+                <li>{`24H合约持仓增长量: ${contractPositionGrowth}`}</li>
+                <li>{`合约持仓价值:${sumOpenInterestValue}`}</li>
+                <li>{`资金费率:${lastFundingRate}`}</li>
+                <li> {`更新时间:${timestamp}`}</li>
+              </ul>
+            );
+          }
+        )
+      ) : (
+        <li>{finalData}</li>
+      )}
     </div>
   );
 };
