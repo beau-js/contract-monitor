@@ -1,9 +1,9 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-07-20 14:43:45
- * @LastEditors: pg-beau pg.beau@outlook.com
- * @LastEditTime: 2023-07-30 19:49:25
- * @FilePath: /WorkSpace/trading-strategy/app/api/larkRobotInteraction/route.ts
+ * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
+ * @LastEditTime: 2023-10-09 01:21:34
+ * @FilePath: /workspace/binance_contract_monitor/app/api/larkRobotInteraction/route.ts
  * @Description:
  *
  * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
@@ -20,7 +20,9 @@ interface BinanceFundingRateData {
 export async function GET() {
   const getBinanceFundingRateData = async () => {
     try {
-      const res = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex`, { next: { revalidate: 60 } });
+      const res = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex`, {
+        next: { revalidate: 60 },
+      });
       const data = await res.json();
       return data;
     } catch (error) {
@@ -50,14 +52,18 @@ export async function GET() {
   };
 
   //获取资金费率所有数据
-  const binanceFundingRateData: BinanceFundingRateData[] = await getBinanceFundingRateData();
+  const binanceFundingRateData: BinanceFundingRateData[] =
+    await getBinanceFundingRateData();
 
   const filterFundingRateData = binanceFundingRateData.filter(
     ({ lastFundingRate }) => Math.abs(Number(lastFundingRate)) >= 0.001
   );
 
   // 筛选符合条件的资金费率币种
-  if (!Array.isArray(filterFundingRateData) || filterFundingRateData.length === 0) {
+  if (
+    !Array.isArray(filterFundingRateData) ||
+    filterFundingRateData.length === 0
+  ) {
     return NextResponse.json({ msg: `No Tokens Meet The Funding Rate Alarm` });
   }
 
@@ -66,28 +72,33 @@ export async function GET() {
   const filterData = (
     await Promise.all(
       filterFundingRateData.map(async ({ symbol, lastFundingRate }) => {
-        const openInterestStatisticsData = await getBinanceOpenInterestStatistics(symbol);
+        const openInterestStatisticsData =
+          await getBinanceOpenInterestStatistics(symbol);
 
         const firstSumOpenInterestValue = openInterestStatisticsData[0];
-        const lastSumOpenInterestValue = openInterestStatisticsData[openInterestStatisticsData.length - 1];
+        const lastSumOpenInterestValue =
+          openInterestStatisticsData[openInterestStatisticsData.length - 1];
 
         const contractPositionGrowth =
           (Number(lastSumOpenInterestValue.sumOpenInterestValue) -
             Number(firstSumOpenInterestValue.sumOpenInterestValue)) /
           Number(firstSumOpenInterestValue.sumOpenInterestValue);
 
-        const contractPositionGrowthPercentage = (contractPositionGrowth * 100).toFixed(2) + '%';
+        const contractPositionGrowthPercentage =
+          (contractPositionGrowth * 100).toFixed(2) + '%';
 
         if (contractPositionGrowth >= 0.4) {
           return {
             symbol,
             lastFundingRate: (Number(lastFundingRate) * 100).toFixed(4) + '%',
             openInterestStatistics: Number(
-              openInterestStatisticsData[openInterestStatisticsData.length - 1].sumOpenInterestValue
+              openInterestStatisticsData[openInterestStatisticsData.length - 1]
+                .sumOpenInterestValue
             ).toFixed(2),
             contractPositionGrowth: contractPositionGrowthPercentage,
             timestamp: convertTZ(
-              openInterestStatisticsData[openInterestStatisticsData.length - 1].timestamp,
+              openInterestStatisticsData[openInterestStatisticsData.length - 1]
+                .timestamp,
               'Asia/Shanghai'
             ),
           };
@@ -101,7 +112,9 @@ export async function GET() {
   if (Array.isArray(filterData) && filterData.length > 0) {
     return NextResponse.json(filterData);
   } else {
-    return NextResponse.json({ msg: `No Tokens Meet The 24h Contract Position Growth Conditions` });
+    return NextResponse.json({
+      msg: `No Tokens Meet The 24h Contract Position Growth Conditions`,
+    });
   }
 }
 
