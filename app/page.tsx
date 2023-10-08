@@ -2,7 +2,7 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: Beau pg.beau@outlook.com
- * @LastEditTime: 2023-10-09 04:43:19
+ * @LastEditTime: 2023-10-09 07:32:11
  * @FilePath: /workspace/binance_contract_monitor_dev/app/page.tsx
  * @Description:
  *
@@ -12,6 +12,7 @@
 const Home = async () => {
   interface BinanceMarkPriceInfo {
     symbol: string;
+    lastFundingRate: string;
   }
   interface BinanceOpenInterestStatistics {
     symbol: string;
@@ -20,8 +21,17 @@ const Home = async () => {
     timestamp: string;
     contractPositionGrowth: number;
   }
+  interface PostLarkData {
+    msg_type: string;
+    content: {
+      text: string;
+    };
+  }
 
-  const fetchBinanceMarkPriceInfo = async (symbol: string) => {
+  const fetchBinanceMarkPriceInfo = async (
+    symbol: string,
+    retries: number
+  ): Promise<BinanceMarkPriceInfo[] | BinanceMarkPriceInfo | undefined> => {
     try {
       const results = await fetch(
         `https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${symbol}`,
@@ -29,14 +39,28 @@ const Home = async () => {
           next: { revalidate: 60 },
         }
       );
-      const data = await results.json();
-      return data;
+      if (results.ok) {
+        const data = await results.json();
+        return data;
+      }
     } catch (error) {
-      console.log({ msg: 'fetchBinanceMarkPriceInfo Error', error });
+      console.log(error);
+      // 如果还有重试次数，延迟一秒再次调用自身
+      if (retries > 0) {
+        setTimeout(() => {
+          return fetchBinanceMarkPriceInfo(symbol, retries - 1);
+        }, 1000);
+      } else {
+        // 如果没有重试次数，抛出异常
+        throw new Error('fetchBinanceMarkPriceInfo Failed');
+      }
     }
   };
 
-  const fetchBinanceOpenInterestStatistics = async (symbol: string) => {
+  const fetchBinanceOpenInterestStatistics = async (
+    symbol: string,
+    retries: number
+  ): Promise<BinanceOpenInterestStatistics[] | undefined> => {
     try {
       const results = await fetch(
         `https://fapi.binance.com/futures/data/openInterestHist?symbol=${symbol}&period=5m&limit=289`,
@@ -47,7 +71,42 @@ const Home = async () => {
       const data = await results.json();
       return data;
     } catch (error) {
-      console.log({ msg: 'fetchBinanceOpenInterestStatistics Error', error });
+      console.log(error);
+      if (retries > 0) {
+        setTimeout(() => {
+          return fetchBinanceOpenInterestStatistics(symbol, retries - 1);
+        }, 1000);
+      } else {
+        // 如果没有重试次数，抛出异常
+        throw new Error('fetchBinanceInterestStatistics Failed');
+      }
+    }
+  };
+
+  const postLarkHandler = async (
+    data: PostLarkData,
+    retries: number
+  ): Promise<PostLarkData[] | undefined> => {
+    try {
+      const res = await fetch(process.env.LARK_HOOK_URL_DEV as string, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      return await res.json();
+    } catch (error) {
+      console.log(error);
+      if (retries > 0) {
+        setTimeout(() => {
+          return postLarkHandler(data, retries - 1);
+        }, 1000);
+      } else {
+        // 如果没有重试次数，抛出异常
+        throw new Error('postLark Failed');
+      }
     }
   };
 
@@ -58,112 +117,105 @@ const Home = async () => {
     return date.toLocaleString('zh-CN', { timeZone: tzString });
   };
 
-  const BINANCE_MARK_PRICE_INFO: BinanceMarkPriceInfo[] =
-    await fetchBinanceMarkPriceInfo('');
+  const BINANCE_MARK_PRICE_INFO = (await fetchBinanceMarkPriceInfo(
+    '',
+    3
+  )) as BinanceMarkPriceInfo[];
 
   const ALL_TRADING_PAIRS = BINANCE_MARK_PRICE_INFO.map(({ symbol }) => {
     return symbol;
   });
 
-  const TOKEN_PAIRS_WITH_HIGH_GROWTH_RATE = (
-    await Promise.all(
-      ALL_TRADING_PAIRS.map(async (symbol) => {
-        const DATA: BinanceOpenInterestStatistics[] =
-          await fetchBinanceOpenInterestStatistics(symbol);
-        const OLDEST_OPEN_INTEREST_STATISTICS = DATA[0];
-
-        const LATEST_OPEN_INTEREST_STATISTICS = DATA[DATA.length - 1];
-
-        const OPEN_INTEREST_POSITION_GROWTH_RATE =
-          (Number(LATEST_OPEN_INTEREST_STATISTICS?.sumOpenInterestValue) -
-            Number(OLDEST_OPEN_INTEREST_STATISTICS?.sumOpenInterestValue)) /
-          Number(OLDEST_OPEN_INTEREST_STATISTICS?.sumOpenInterestValue);
-
-        if (OPEN_INTEREST_POSITION_GROWTH_RATE >= 0.4) {
-          return {
-            ...LATEST_OPEN_INTEREST_STATISTICS,
-            contractPositionGrowth: OPEN_INTEREST_POSITION_GROWTH_RATE,
-          };
-        } else {
-          return null;
-        }
-      })
-    )
-  ).filter((item): item is BinanceOpenInterestStatistics => Boolean(item));
   let finalData;
 
-  if (TOKEN_PAIRS_WITH_HIGH_GROWTH_RATE.length === 0) {
-    finalData = 'no data';
-  } else {
-    finalData = await Promise.all(
-      TOKEN_PAIRS_WITH_HIGH_GROWTH_RATE.map(
-        async ({
+  if (Array.isArray(ALL_TRADING_PAIRS) && ALL_TRADING_PAIRS.length > 0) {
+    const TOKEN_PAIRS_WITH_HIGH_GROWTH_RATE = (
+      await Promise.all(
+        ALL_TRADING_PAIRS.map(async (symbol) => {
+          const DATA = await fetchBinanceOpenInterestStatistics(symbol, 3);
+          if (Array.isArray(DATA) && DATA.length > 0) {
+            const OLDEST_OPEN_INTEREST_STATISTICS = DATA[0];
+
+            const LATEST_OPEN_INTEREST_STATISTICS = DATA[DATA.length - 1];
+
+            const OPEN_INTEREST_POSITION_GROWTH_RATE =
+              (Number(LATEST_OPEN_INTEREST_STATISTICS?.sumOpenInterestValue) -
+                Number(OLDEST_OPEN_INTEREST_STATISTICS?.sumOpenInterestValue)) /
+              Number(OLDEST_OPEN_INTEREST_STATISTICS?.sumOpenInterestValue);
+
+            if (OPEN_INTEREST_POSITION_GROWTH_RATE >= 0.4) {
+              return {
+                ...LATEST_OPEN_INTEREST_STATISTICS,
+                contractPositionGrowth: OPEN_INTEREST_POSITION_GROWTH_RATE,
+              };
+            } else {
+              return null;
+            }
+          }
+        })
+      )
+    ).filter((item): item is BinanceOpenInterestStatistics => Boolean(item));
+
+    if (TOKEN_PAIRS_WITH_HIGH_GROWTH_RATE.length === 0) {
+      finalData = 'no data';
+    } else {
+      finalData = await Promise.all(
+        TOKEN_PAIRS_WITH_HIGH_GROWTH_RATE.map(
+          async ({
+            symbol,
+            sumOpenInterest,
+            sumOpenInterestValue,
+            contractPositionGrowth,
+            timestamp,
+          }) => {
+            const MARK_PRICE_DATA = (await fetchBinanceMarkPriceInfo(
+              symbol,
+              3
+            )) as BinanceMarkPriceInfo;
+            return {
+              symbol,
+              sumOpenInterest: Number(sumOpenInterest).toFixed(4),
+              sumOpenInterestValue: Number(sumOpenInterestValue).toFixed(4),
+              contractPositionGrowth:
+                (contractPositionGrowth * 100).toFixed(2) + '%',
+              lastFundingRate:
+                (Number(MARK_PRICE_DATA.lastFundingRate) * 100).toFixed(2) +
+                '%',
+              timestamp: convertTZ(timestamp, 'Asia/Shanghai'),
+            };
+          }
+        )
+      );
+    }
+
+    if (Array.isArray(finalData)) {
+      const LARK_DATA = finalData.map(
+        ({
           symbol,
-          sumOpenInterest,
-          sumOpenInterestValue,
           contractPositionGrowth,
+          sumOpenInterestValue,
+          lastFundingRate,
           timestamp,
         }) => {
-          const MARK_PRICE_DATA = await fetchBinanceMarkPriceInfo(symbol);
-          return {
-            symbol,
-            sumOpenInterest: Number(sumOpenInterest).toFixed(4),
-            sumOpenInterestValue: Number(sumOpenInterestValue).toFixed(4),
-            contractPositionGrowth:
-              (contractPositionGrowth * 100).toFixed(2) + '%',
-            lastFundingRate:
-              (Number(MARK_PRICE_DATA.lastFundingRate) * 100).toFixed(2) + '%',
-            timestamp: convertTZ(timestamp, 'Asia/Shanghai'),
-          };
-        }
-      )
-    );
-  }
-
-  if (Array.isArray(finalData)) {
-    const LARK_DATA = finalData.map(
-      ({
-        symbol,
-        contractPositionGrowth,
-        sumOpenInterestValue,
-        lastFundingRate,
-        timestamp,
-      }) => {
-        return `
-        交易币对：${symbol}
-        24H合约持仓量: ${contractPositionGrowth}
-        合约持仓价值: ${sumOpenInterestValue}
-        资金费率: ${lastFundingRate}
-        更新时间：${timestamp}
-        `;
-      }
-    );
-
-    const POST_LARK_DATA = {
-      msg_type: 'text',
-      content: {
-        text: `行情警报:
-            ${JSON.parse(JSON.stringify(LARK_DATA)).join('')}`,
-      },
-    };
-
-    try {
-      const POST_LARK_RES = await fetch(
-        process.env.LARK_HOOK_URL_DEV as string,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(POST_LARK_DATA),
+          return `
+          交易币对：${symbol}
+          24H合约持仓量: ${contractPositionGrowth}
+          合约持仓价值: ${sumOpenInterestValue}
+          资金费率: ${lastFundingRate}
+          更新时间：${timestamp}
+          `;
         }
       );
 
-      const DATA = await POST_LARK_RES.json();
-
+      const POST_LARK_DATA = {
+        msg_type: 'text',
+        content: {
+          text: `行情警报:
+              ${JSON.parse(JSON.stringify(LARK_DATA)).join('')}`,
+        },
+      };
+      const DATA = await postLarkHandler(POST_LARK_DATA, 3);
       console.log(DATA);
-    } catch (error) {
-      console.log({ msg: 'Post Lark Error', error });
     }
   }
 
