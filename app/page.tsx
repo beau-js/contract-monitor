@@ -2,7 +2,7 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: Beau pg.beau@outlook.com
- * @LastEditTime: 2023-10-09 07:32:11
+ * @LastEditTime: 2023-10-09 07:48:47
  * @FilePath: /workspace/binance_contract_monitor_dev/app/page.tsx
  * @Description:
  *
@@ -10,17 +10,15 @@
  */
 // app/page.tsx
 const Home = async () => {
-  interface BinanceMarkPriceInfo {
+  interface BinanceData {
     symbol: string;
     lastFundingRate: string;
-  }
-  interface BinanceOpenInterestStatistics {
-    symbol: string;
     sumOpenInterest: string;
     sumOpenInterestValue: string;
     timestamp: string;
     contractPositionGrowth: number;
   }
+
   interface PostLarkData {
     msg_type: string;
     content: {
@@ -31,7 +29,7 @@ const Home = async () => {
   const fetchBinanceMarkPriceInfo = async (
     symbol: string,
     retries: number
-  ): Promise<BinanceMarkPriceInfo[] | BinanceMarkPriceInfo | undefined> => {
+  ): Promise<BinanceData[] | BinanceData | undefined> => {
     try {
       const results = await fetch(
         `https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${symbol}`,
@@ -60,7 +58,7 @@ const Home = async () => {
   const fetchBinanceOpenInterestStatistics = async (
     symbol: string,
     retries: number
-  ): Promise<BinanceOpenInterestStatistics[] | undefined> => {
+  ): Promise<BinanceData[] | undefined> => {
     try {
       const results = await fetch(
         `https://fapi.binance.com/futures/data/openInterestHist?symbol=${symbol}&period=5m&limit=289`,
@@ -120,18 +118,17 @@ const Home = async () => {
   const BINANCE_MARK_PRICE_INFO = (await fetchBinanceMarkPriceInfo(
     '',
     3
-  )) as BinanceMarkPriceInfo[];
-
-  const ALL_TRADING_PAIRS = BINANCE_MARK_PRICE_INFO.map(({ symbol }) => {
-    return symbol;
-  });
+  )) as BinanceData[];
 
   let finalData;
 
-  if (Array.isArray(ALL_TRADING_PAIRS) && ALL_TRADING_PAIRS.length > 0) {
+  if (
+    Array.isArray(BINANCE_MARK_PRICE_INFO) &&
+    BINANCE_MARK_PRICE_INFO.length > 0
+  ) {
     const TOKEN_PAIRS_WITH_HIGH_GROWTH_RATE = (
       await Promise.all(
-        ALL_TRADING_PAIRS.map(async (symbol) => {
+        BINANCE_MARK_PRICE_INFO.map(async ({ symbol, lastFundingRate }) => {
           const DATA = await fetchBinanceOpenInterestStatistics(symbol, 3);
           if (Array.isArray(DATA) && DATA.length > 0) {
             const OLDEST_OPEN_INTEREST_STATISTICS = DATA[0];
@@ -147,6 +144,7 @@ const Home = async () => {
               return {
                 ...LATEST_OPEN_INTEREST_STATISTICS,
                 contractPositionGrowth: OPEN_INTEREST_POSITION_GROWTH_RATE,
+                lastFundingRate,
               };
             } else {
               return null;
@@ -154,7 +152,7 @@ const Home = async () => {
           }
         })
       )
-    ).filter((item): item is BinanceOpenInterestStatistics => Boolean(item));
+    ).filter((item): item is BinanceData => Boolean(item));
 
     if (TOKEN_PAIRS_WITH_HIGH_GROWTH_RATE.length === 0) {
       finalData = 'no data';
@@ -163,24 +161,17 @@ const Home = async () => {
         TOKEN_PAIRS_WITH_HIGH_GROWTH_RATE.map(
           async ({
             symbol,
-            sumOpenInterest,
+            lastFundingRate,
             sumOpenInterestValue,
             contractPositionGrowth,
             timestamp,
           }) => {
-            const MARK_PRICE_DATA = (await fetchBinanceMarkPriceInfo(
-              symbol,
-              3
-            )) as BinanceMarkPriceInfo;
             return {
               symbol,
-              sumOpenInterest: Number(sumOpenInterest).toFixed(4),
               sumOpenInterestValue: Number(sumOpenInterestValue).toFixed(4),
               contractPositionGrowth:
                 (contractPositionGrowth * 100).toFixed(2) + '%',
-              lastFundingRate:
-                (Number(MARK_PRICE_DATA.lastFundingRate) * 100).toFixed(2) +
-                '%',
+              lastFundingRate: (Number(lastFundingRate) * 100).toFixed(2) + '%',
               timestamp: convertTZ(timestamp, 'Asia/Shanghai'),
             };
           }
