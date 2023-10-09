@@ -11,6 +11,6 @@ jobs:
       - name: HTTP Request Action
         uses: fjogeleit/http-request-action@master
         with:
-          url: 'https://trading-straregy.vercel.app/api/larkRobotInteraction'
+          url: 'https://contract-monitor.vercel.app/api/larkRobotInteraction'
           method: 'POST'
           data: '{"key":"${{secrets.BEARER_TOKEN}}"}'
