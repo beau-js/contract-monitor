@@ -1,4 +1,4 @@
-name: Trigger post
+name: Trigger post dev
 
 on:
   schedule:
