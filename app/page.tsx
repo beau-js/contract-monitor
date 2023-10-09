@@ -2,7 +2,7 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: Beau pg.beau@outlook.com
- * @LastEditTime: 2023-10-09 07:48:47
+ * @LastEditTime: 2023-10-09 18:30:34
  * @FilePath: /workspace/binance_contract_monitor_dev/app/page.tsx
  * @Description:
  *
@@ -41,16 +41,19 @@ const Home = async () => {
         const data = await results.json();
         return data;
       }
+
+      throw new Error('Fetch Binance Mark Price Failed');
     } catch (error) {
-      console.log(error);
       // 如果还有重试次数，延迟一秒再次调用自身
       if (retries > 0) {
+        console.log(`${retries}:${error}`);
         setTimeout(() => {
           return fetchBinanceMarkPriceInfo(symbol, retries - 1);
         }, 1000);
       } else {
         // 如果没有重试次数，抛出异常
-        throw new Error('fetchBinanceMarkPriceInfo Failed');
+        console.log(error);
+        throw error;
       }
     }
   };
@@ -66,17 +69,20 @@ const Home = async () => {
           next: { revalidate: 60 },
         }
       );
-      const data = await results.json();
-      return data;
+      if (results.ok) {
+        const data = await results.json();
+        return data;
+      }
+      throw new Error(`Fetch Binance Open Interest Statistics Failed`);
     } catch (error) {
-      console.log(error);
       if (retries > 0) {
+        console.log(`${retries}:${error}`);
         setTimeout(() => {
           return fetchBinanceOpenInterestStatistics(symbol, retries - 1);
         }, 1000);
       } else {
         // 如果没有重试次数，抛出异常
-        throw new Error('fetchBinanceInterestStatistics Failed');
+        throw error;
       }
     }
   };
@@ -93,17 +99,20 @@ const Home = async () => {
         },
         body: JSON.stringify(data),
       });
-
-      return await res.json();
+      if (res.ok) {
+        const postLarkData = await res.json();
+        return postLarkData;
+      }
+      throw new Error(`Post Data to Lark Failed`);
     } catch (error) {
-      console.log(error);
       if (retries > 0) {
+        console.log(`${retries}:${error}`);
         setTimeout(() => {
           return postLarkHandler(data, retries - 1);
         }, 1000);
       } else {
         // 如果没有重试次数，抛出异常
-        throw new Error('postLark Failed');
+        throw error;
       }
     }
   };
