@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: HTTP Request Action
-      if: github.ref == 'refs/heads/dev'
+        if: github.ref == 'refs/heads/dev'
         uses: fjogeleit/http-request-action@master
         with:
           url: 'https://contract-monitor-dev.vercel.app/'
