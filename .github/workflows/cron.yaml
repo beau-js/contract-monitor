@@ -1,4 +1,4 @@
-name: Send HTTP request to website
+name: Send HTTP request to lark
 
 on:
   schedule:
