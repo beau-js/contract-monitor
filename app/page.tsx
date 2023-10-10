@@ -1,9 +1,9 @@
 /*
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
- * @LastEditors: Beau pg.beau@outlook.com
- * @LastEditTime: 2023-10-09 18:30:34
- * @FilePath: /workspace/binance_contract_monitor_dev/app/page.tsx
+ * @LastEditors: beau beau.js@outlook.com
+ * @LastEditTime: 2023-10-11 03:47:55
+ * @FilePath: /workspace/binance_contract_monitor/app/page.tsx
  * @Description:
  *
  * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
@@ -40,9 +40,9 @@ const Home = async () => {
       if (results.ok) {
         const data = await results.json();
         return data;
+      } else {
+        throw new Error('Fetch Binance Mark Price Failed');
       }
-
-      throw new Error('Fetch Binance Mark Price Failed');
     } catch (error) {
       // 如果还有重试次数，延迟一秒再次调用自身
       if (retries > 0) {
@@ -52,7 +52,7 @@ const Home = async () => {
         }, 1000);
       } else {
         // 如果没有重试次数，抛出异常
-        console.log(error);
+        console.log('Fetch Binance Mark Price Failed' + error);
         throw error;
       }
     }
@@ -72,8 +72,9 @@ const Home = async () => {
       if (results.ok) {
         const data = await results.json();
         return data;
+      } else {
+        throw new Error(`Fetch Binance Open Interest Statistics Failed`);
       }
-      throw new Error(`Fetch Binance Open Interest Statistics Failed`);
     } catch (error) {
       if (retries > 0) {
         console.log(`${retries}:${error}`);
@@ -82,6 +83,7 @@ const Home = async () => {
         }, 1000);
       } else {
         // 如果没有重试次数，抛出异常
+        console.log(`Fetch Binance Open Interest Statistics Failed ${error}`);
         throw error;
       }
     }
@@ -92,7 +94,7 @@ const Home = async () => {
     retries: number
   ): Promise<PostLarkData[] | undefined> => {
     try {
-      const res = await fetch(process.env.LARK_HOOK_URL_DEV as string, {
+      const res = await fetch(process.env.LARK_HOOK_URL as string, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,8 +104,9 @@ const Home = async () => {
       if (res.ok) {
         const postLarkData = await res.json();
         return postLarkData;
+      } else {
+        throw new Error(`Post Data to Lark Failed`);
       }
-      throw new Error(`Post Data to Lark Failed`);
     } catch (error) {
       if (retries > 0) {
         console.log(`${retries}:${error}`);
@@ -112,6 +115,7 @@ const Home = async () => {
         }, 1000);
       } else {
         // 如果没有重试次数，抛出异常
+        console.log(`Post Data to Lark Failed ${error}`);
         throw error;
       }
     }
