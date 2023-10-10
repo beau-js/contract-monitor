@@ -1,4 +1,4 @@
-name: Trigger post
+name: Send HTTP request to website
 
 on:
   schedule:
@@ -11,6 +11,5 @@ jobs:
       - name: HTTP Request Action
         uses: fjogeleit/http-request-action@master
         with:
-          url: 'https://contract-monitor.vercel.app/api/larkRobotInteraction'
-          method: 'POST'
-          data: '{"key":"${{secrets.BEARER_TOKEN}}"}'
+          url: 'https://contract-monitor-dev.vercel.app/'
+          method: 'GET'
