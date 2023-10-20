@@ -2,13 +2,13 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-18 20:26:09
+ * @LastEditTime: 2023-10-19 23:18:57
  * @FilePath: /workspace/contract-monitor-dev/app/page.tsx
  * @Description:
  *
  * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
  */
-// app/page.tsx
+// app/page.tsx //change
 const Home = async () => {
   interface BinanceData {
     symbol: string;
