@@ -2,8 +2,8 @@
   "regions": ["hnd1"],
   "crons": [
     {
-      "path": "/api/larkRobotInteraction",
-      "schedule": "0 0 * * *"
+      "path": "/api/contracts",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
