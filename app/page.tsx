@@ -2,7 +2,7 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-22 03:32:36
+ * @LastEditTime: 2023-10-22 03:49:36
  * @FilePath: /workspace/contract-monitor/app/page.tsx
  * @Description:
  *
@@ -27,7 +27,7 @@ const Home = async () => {
   type HighGrowthTokenData = BinanceMarkPriceData &
     BinanceOpenInterestData & { contractPositionGrowth: number };
 
-  const RES = await fetch(`https://contract-monitor-dev.vercel.app/api/contracts`, {
+  const RES = await fetch(`https://contract-monitor.vercel.app/api/contracts`, {
     next: { revalidate: 60 },
   });
 
