@@ -2,17 +2,67 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-21 05:14:50
+ * @LastEditTime: 2023-10-22 02:10:15
  * @FilePath: /workspace/contract-monitor-dev/app/page.tsx
  * @Description:
  *
  * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
  */
-// app/page.tsx test
+
+// app/page.tsx
 const Home = async () => {
+  interface BinanceMarkPriceData {
+    symbol: string;
+    markPrice: string;
+    lastFundingRate: string;
+  }
+
+  interface BinanceOpenInterestData {
+    symbol: string;
+    sumOpenInterest: string;
+    sumOpenInterestValue: string;
+    timestamp: number;
+  }
+
+  type HighGrowthTokenData = BinanceMarkPriceData &
+    BinanceOpenInterestData & { contractPositionGrowth: number };
+
+  const RES = await fetch(`https://contract-monitor-dev.vercel.app/api/contracts`, {
+    next: { revalidate: 60 },
+  });
+
+  const DATA: HighGrowthTokenData[] | { msg: string } = await RES.json();
+
+  if ("msg" in DATA)
+    return (
+      <>
+        <h1 className="m-6">符合交易策略币对</h1>
+        <p>{DATA.msg}</p>
+      </>
+    );
+
   return (
     <div>
-      <h1 className="m-6">符合交易策略代币</h1>
+      <h1 className="m-6">符合交易策略币对</h1>
+      {DATA.map(
+        ({
+          symbol,
+          markPrice,
+          lastFundingRate,
+          contractPositionGrowth,
+          sumOpenInterestValue,
+          timestamp,
+        }) => (
+          <ul className="m-6">
+            <li>交易对: {symbol}</li>
+            <li>标记价格：{markPrice}</li>
+            <li>资金费率：{lastFundingRate}</li>
+            <li>24H合约持仓增长率: {contractPositionGrowth}</li>
+            <li>合约持仓价值: {sumOpenInterestValue}</li>
+            <li>数据更新时间: {timestamp}</li>
+          </ul>
+        )
+      )}
     </div>
   );
 };
