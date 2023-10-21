@@ -2,7 +2,7 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-22 03:12:25
+ * @LastEditTime: 2023-10-22 03:25:36
  * @FilePath: /workspace/contract-monitor/app/page.tsx
  * @Description:
  *
@@ -27,23 +27,23 @@ const Home = async () => {
   type HighGrowthTokenData = BinanceMarkPriceData &
     BinanceOpenInterestData & { contractPositionGrowth: number };
 
-  const RES = await fetch(`https://contract-monitor.vercel.app/api/contracts`, {
-    next: { revalidate: 60 },
-  });
+  // const RES = await fetch(`https://contract-monitor.vercel.app/api/contracts`, {
+  //   next: { revalidate: 60 },
+  // });
 
-  const DATA: HighGrowthTokenData[] | { msg: string } = await RES.json();
+  // const DATA: HighGrowthTokenData[] | { msg: string } = await RES.json();
 
-  if ("msg" in DATA)
-    return (
-      <>
-        <h1 className="m-6">符合交易策略币对</h1>
-        <p>{DATA.msg}</p>
-      </>
-    );
+  // if ("msg" in DATA)
+  //   return (
+  //     <>
+  //       <h1 className="m-6">符合交易策略币对</h1>
+  //       <p>{DATA.msg}</p>
+  //     </>
+  //   );
 
   return (
     <div>
-      <h1 className="m-6">符合交易策略币对</h1>
+      {/* <h1 className="m-6">符合交易策略币对</h1>
       {DATA.map(
         ({
           symbol,
@@ -62,7 +62,7 @@ const Home = async () => {
             <li>数据更新时间: {timestamp}</li>
           </ul>
         )
-      )}
+      )} */}
     </div>
   );
 };
