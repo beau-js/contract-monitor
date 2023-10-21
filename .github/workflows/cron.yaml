@@ -1,0 +1,18 @@
+name: Send HTTP request to website
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+
+jobs:
+  trigger-function:
+    runs-on: ubuntu-latest
+    steps:
+      - name: HTTP Request Action
+        if: github.ref == 'refs/heads/dev'
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: "https://contract-monitor-dev.vercel.app/"
+          method: "POST"
+          data: ${{ secrets.POST_LARK_TOKEN }}
+          headers: '{"Content-Type": "application/json"}'

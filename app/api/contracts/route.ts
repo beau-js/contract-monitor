@@ -2,7 +2,17 @@
  * @Author: beau beau.js@outlook.com
  * @Date: 2023-10-17 13:48:20
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-21 05:11:52
+ * @LastEditTime: 2023-10-21 21:43:04
+ * @FilePath: /workspace/contract-monitor-dev/app/api/contracts/route.ts
+ * @Description: 
+ * 
+ * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved. 
+ */
+/*
+ * @Author: beau beau.js@outlook.com
+ * @Date: 2023-10-17 13:48:20
+ * @LastEditors: beau beau.js@outlook.com
+ * @LastEditTime: 2023-10-21 21:30:00
  * @FilePath: /workspace/contract-monitor-dev/app/api/contracts/route.ts
  * @Description:
  *
@@ -131,6 +141,9 @@ export async function GET(request: Request) {
 
 // POST
 export async function POST(request: Request) {
+  const data = await request.json();
+  if (data.name !== "beau" || data.pwd !== process.env.BEAU_PWD) return NextResponse.json({ msg: "Invalid Token" });
+
   interface PostLarkData {
     msg_type: string;
     content: {
@@ -140,7 +153,7 @@ export async function POST(request: Request) {
 
   // 封装 fetch lark机器人
   const postLarkHandler = async (data: PostLarkData) => {
-    const RES = await fetch(process.env.LARK_HOOK_URL_DEV as string, {
+    const RES = await fetch(process.env.LARK_HOOK_URL as string, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
