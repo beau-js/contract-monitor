@@ -2,7 +2,7 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-22 02:45:46
+ * @LastEditTime: 2023-10-22 03:12:25
  * @FilePath: /workspace/contract-monitor/app/page.tsx
  * @Description:
  *
