@@ -2,7 +2,7 @@
  * @Author: beau beau.js@outlook.com
  * @Date: 2023-10-17 13:48:20
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-21 21:43:04
+ * @LastEditTime: 2023-10-21 22:33:26
  * @FilePath: /workspace/contract-monitor-dev/app/api/contracts/route.ts
  * @Description: 
  * 
@@ -141,6 +141,7 @@ export async function GET(request: Request) {
 
 // POST
 export async function POST(request: Request) {
+  // 验证
   const data = await request.json();
   if (data.name !== "beau" || data.pwd !== process.env.BEAU_PWD) return NextResponse.json({ msg: "Invalid Token" });
 
@@ -202,6 +203,7 @@ export async function POST(request: Request) {
     },
   };
   const DATA = await postLarkHandler(POST_LARK_DATA);
+
   return NextResponse.json(DATA);
 
 }
