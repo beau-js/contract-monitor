@@ -2,7 +2,7 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-22 03:29:29
+ * @LastEditTime: 2023-10-22 03:32:36
  * @FilePath: /workspace/contract-monitor/app/page.tsx
  * @Description:
  *
@@ -53,7 +53,7 @@ const Home = async () => {
           sumOpenInterestValue,
           timestamp,
         }) => (
-          <ul className="m-6">
+          <ul key={symbol} className="m-6">
             <li>交易对: {symbol}</li>
             <li>标记价格：{markPrice}</li>
             <li>资金费率：{lastFundingRate}</li>
