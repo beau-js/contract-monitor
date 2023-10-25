@@ -2,49 +2,23 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-22 03:49:36
+ * @LastEditTime: 2023-10-26 03:01:45
  * @FilePath: /workspace/contract-monitor/app/page.tsx
  * @Description:
  *
  * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
  */
 
+import prisma from "@/prisma/db";
+
 // app/page.tsx
 const Home = async () => {
-  interface BinanceMarkPriceData {
-    symbol: string;
-    markPrice: string;
-    lastFundingRate: string;
-  }
-
-  interface BinanceOpenInterestData {
-    symbol: string;
-    sumOpenInterest: string;
-    sumOpenInterestValue: string;
-    timestamp: number;
-  }
-
-  type HighGrowthTokenData = BinanceMarkPriceData &
-    BinanceOpenInterestData & { contractPositionGrowth: number };
-
-  const RES = await fetch(`https://contract-monitor.vercel.app/api/contracts`, {
-    next: { revalidate: 60 },
-  });
-
-  const DATA: HighGrowthTokenData[] | { msg: string } = await RES.json();
-
-  if ("msg" in DATA)
-    return (
-      <>
-        <h1 className="m-6">符合交易策略币对</h1>
-        <p>{DATA.msg}</p>
-      </>
-    );
+  const HIGH_GROWTH_TOKEN = await prisma.hightGrowthToken.findMany();
 
   return (
     <div>
       <h1 className="m-6">符合交易策略币对</h1>
-      {DATA.map(
+      {HIGH_GROWTH_TOKEN.map(
         ({
           symbol,
           markPrice,
