@@ -1,24 +1,49 @@
 /*
- * @Author: pg-beau pg.beau@outlook.com
- * @Date: 2023-07-28 15:43:04
+ * @Author: beau beau.js@outlook.com
+ * @Date: 2023-10-26 15:39:26
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-26 03:01:45
+ * @LastEditTime: 2023-10-26 15:41:55
  * @FilePath: /workspace/contract-monitor/app/page.tsx
  * @Description:
  *
  * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
  */
-
-import prisma from "@/prisma/db";
-
 // app/page.tsx
+import { GET } from "./api/contracts/route";
+
 const Home = async () => {
-  const HIGH_GROWTH_TOKEN = await prisma.hightGrowthToken.findMany();
+  interface BinanceMarkPriceData {
+    symbol: string;
+    markPrice: string;
+    lastFundingRate: string;
+  }
+
+  interface BinanceOpenInterestData {
+    symbol: string;
+    sumOpenInterest: string;
+    sumOpenInterestValue: string;
+    timestamp: number;
+  }
+
+  type HighGrowthTokenData = BinanceMarkPriceData &
+    BinanceOpenInterestData & { contractPositionGrowth: string };
+
+  const RES = await GET(null);
+  const DATA: HighGrowthTokenData[] | { msg: string } = await RES.json();
+  console.log(DATA);
+
+  if ("msg" in DATA)
+    return (
+      <>
+        <h1 className="m-6">符合交易策略币对</h1>
+        <p>{DATA.msg}</p>
+      </>
+    );
 
   return (
     <div>
       <h1 className="m-6">符合交易策略币对</h1>
-      {HIGH_GROWTH_TOKEN.map(
+      {DATA.map(
         ({
           symbol,
           markPrice,

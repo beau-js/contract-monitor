@@ -1,81 +1,29 @@
-/*
- * @Author: beau beau.js@outlook.com
- * @Date: 2023-10-17 13:48:20
- * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-26 02:59:34
- * @FilePath: /workspace/contract-monitor/app/api/contracts/route.ts
- * @Description:
- *
- * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
- */
-/*
- * @Author: beau beau.js@outlook.com
- * @Date: 2023-10-17 13:48:20
- * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-21 21:30:00
- * @FilePath: /workspace/contract-monitor-dev/app/api/contracts/route.ts
- * @Description:
- *
- * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
- */
-import prisma from "@/prisma/db";
 import { NextResponse } from "next/server";
 
-// POST
-export async function POST(request: Request) {
-  // 验证post是否合法
-  const data = await request.json();
-  if (data.name !== "beau" || data.pwd !== process.env.BEAU_PWD)
-    return NextResponse.json({ msg: "Invalid Token" });
+interface BinanceMarkPriceData {
+  symbol: string;
+  markPrice: string;
+  lastFundingRate: string;
+}
 
-  interface BinanceMarkPriceData {
-    symbol: string;
-    markPrice: string;
-    lastFundingRate: string;
-  }
+interface BinanceOpenInterestData {
+  symbol: string;
+  sumOpenInterest: string;
+  sumOpenInterestValue: string;
+  timestamp: number;
+}
 
-  interface BinanceOpenInterestData {
-    symbol: string;
-    sumOpenInterest: string;
-    sumOpenInterestValue: string;
-    timestamp: number;
-  }
+type HighGrowthTokenData = BinanceMarkPriceData &
+  BinanceOpenInterestData & { contractPositionGrowth: string; timestamp: string };
 
-  type HighGrowthTokenData = BinanceMarkPriceData &
-    BinanceOpenInterestData & {
-      timestamp: string; // 将timestamp的类型从number改为string
-      contractPositionGrowth: string;
-    };
-
-  interface PostLarkData {
-    msg_type: string;
-    content: {
-      text: string;
-    };
-  }
-
-  // 封装 fetch lark机器人
-  const postLarkHandler = async (data: PostLarkData) => {
-    const RES = await fetch(process.env.LARK_HOOK_URL as string, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!RES.ok) return "Post Data to Lark Failed";
-
-    const DATA = await RES.json();
-    return DATA;
-  };
-
+// GET
+export async function GET(request: Request | null) {
   // 封装fetch symbol和资金费率
   const fetchBinanceMarkPriceInfo = async (): Promise<
     BinanceMarkPriceData[] | BinanceMarkPriceData | string
   > => {
     const RES = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex`, {
-      next: { revalidate: 10 },
+      next: { revalidate: 60 },
     });
 
     if (!RES.ok) return "Fetch Binance Mark Price Failed";
@@ -93,7 +41,7 @@ export async function POST(request: Request) {
     const RES = await fetch(
       `https://fapi.binance.com/futures/data/openInterestHist?symbol=${symbol}&period=5m&limit=289`,
       {
-        next: { revalidate: 10 },
+        next: { revalidate: 60 },
       }
     );
 
@@ -163,11 +111,43 @@ export async function POST(request: Request) {
       { status: 204 }
     );
 
-  await prisma.hightGrowthToken.deleteMany();
+  return NextResponse.json(HIGH_GROWTH_TOKEN, { status: 200 });
+}
 
-  await prisma.hightGrowthToken.createMany({
-    data: HIGH_GROWTH_TOKEN,
-  });
+// POST
+export async function POST(request: Request) {
+  // 验证
+  const data = await request.json();
+  if (data.name !== "beau" || data.pwd !== process.env.BEAU_PWD)
+    return NextResponse.json({ msg: "Invalid Token" });
+
+  interface PostLarkData {
+    msg_type: string;
+    content: {
+      text: string;
+    };
+  }
+
+  // 封装 fetch lark机器人
+  const postLarkHandler = async (data: PostLarkData) => {
+    const RES = await fetch(process.env.LARK_HOOK_URL as string, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!RES.ok) return "Post Data to Lark Failed";
+
+    const DATA = await RES.json();
+    return DATA;
+  };
+
+  const RES = await GET(request);
+  const HIGH_GROWTH_TOKEN: HighGrowthTokenData[] | { msg: string } = await RES.json();
+
+  if (!Array.isArray(HIGH_GROWTH_TOKEN)) return NextResponse.json(HIGH_GROWTH_TOKEN);
 
   // 转换成易读的格式
   const LARK_DATA = HIGH_GROWTH_TOKEN.map(
