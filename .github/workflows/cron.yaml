@@ -9,10 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: HTTP Request Action
-        if: github.ref == 'refs/heads/dev'
+        if: github.ref == 'refs/heads/main'
         uses: fjogeleit/http-request-action@master
         with:
-          url: "https://contract-monitor.vercel.app/"
-          method: "POST"
-          data: ${{ secrets.POST_LARK_TOKEN }}
-          headers: '{"Content-Type": "application/json"}'
+          url: "https://contract-monitor.vercel.app/api/lark-robot?secret=${{secrets.POST_LARK_SECRET}}"
