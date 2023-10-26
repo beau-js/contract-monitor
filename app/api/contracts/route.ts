@@ -175,9 +175,9 @@ export async function POST(request: Request) {
     }) => {
       return `
         交易币对：${symbol}
-        标记价格：${markPrice}
         资金费率: ${lastFundingRate}
         24H合约持仓增长量: ${contractPositionGrowth}
+        标记价格：${markPrice}
         合约持仓价值: ${sumOpenInterestValue}
         更新时间：${timestamp}
         `;
