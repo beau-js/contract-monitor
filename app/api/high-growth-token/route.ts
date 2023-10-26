@@ -2,8 +2,8 @@
  * @Author: beau beau.js@outlook.com
  * @Date: 2023-10-17 13:48:20
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-26 18:45:59
- * @FilePath: /workspace/contract-monitor-dev/app/api/contracts/route.ts
+ * @LastEditTime: 2023-10-26 20:16:47
+ * @FilePath: /workspace/contract-monitor-dev/app/api/high-growth-token/route.ts
  * @Description:
  *
  * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
@@ -96,10 +96,10 @@ export async function GET(request: Request | "") {
 
         return {
           symbol,
-          markPrice: Number(markPrice).toFixed(4),
           lastFundingRate: (Number(lastFundingRate) * 100).toFixed(4) + "%",
           contractPositionGrowth:
             (Number(OPEN_INTEREST_POSITION_GROWTH_RATE) * 100).toFixed(2) + "%",
+          markPrice: Number(markPrice).toFixed(4),
           sumOpenInterest: Number(LATEST_OPEN_INTEREST_STATISTICS.sumOpenInterest).toFixed(4),
           sumOpenInterestValue: Number(
             LATEST_OPEN_INTEREST_STATISTICS.sumOpenInterestValue
@@ -116,6 +116,12 @@ export async function GET(request: Request | "") {
       { msg: `No Pairs Meet The Contract Position Growth Rate Condition` },
       { status: 204 }
     );
+  // 按资金费率升序
+  HIGH_GROWTH_TOKEN.sort((a, b) => {
+    const VALUE_1 = Number(a.lastFundingRate.slice(0, -1));
+    const VALUE_2 = Number(b.lastFundingRate.slice(0, -1));
+    return VALUE_2 - VALUE_1;
+  });
 
   return NextResponse.json(HIGH_GROWTH_TOKEN as HighGrowthTokenData[], { status: 200 });
 }
