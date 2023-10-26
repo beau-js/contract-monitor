@@ -17,7 +17,7 @@ type HighGrowthTokenData = BinanceMarkPriceData &
   BinanceOpenInterestData & { contractPositionGrowth: string; timestamp: string };
 
 // GET
-export async function GET(request: Request | null) {
+export async function GET(request: Request | "") {
   // 封装fetch symbol和资金费率
   const fetchBinanceMarkPriceInfo = async (): Promise<
     BinanceMarkPriceData[] | BinanceMarkPriceData | string
