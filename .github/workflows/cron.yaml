@@ -12,7 +12,4 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: fjogeleit/http-request-action@master
         with:
-          url: "https://contract-monitor.vercel.app/api/lark-robot?secret"
-          method: "POST"
-          data: ${{ secrets.POST_LARK_TOKEN }}
-          headers: '{"Content-Type": "application/json"}'
+          url: "https://contract-monitor.vercel.app/api/lark-robot?secret=${{secrets.POST_LARK_SECRET}}"

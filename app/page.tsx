@@ -2,14 +2,14 @@
  * @Author: beau beau.js@outlook.com
  * @Date: 2023-10-26 15:39:26
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-26 17:25:27
+ * @LastEditTime: 2023-10-26 19:02:29
  * @FilePath: /workspace/contract-monitor/app/page.tsx
  * @Description:
  *
  * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
  */
 // app/page.tsx
-import { GET } from "./api/contracts/route";
+import { GET } from "./api/high-growth-token/route";
 
 const Home = async () => {
   interface BinanceMarkPriceData {
