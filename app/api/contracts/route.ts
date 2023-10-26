@@ -17,43 +17,52 @@ type HighGrowthTokenData = BinanceMarkPriceData &
   BinanceOpenInterestData & { contractPositionGrowth: string; timestamp: string };
 
 // GET
-export async function GET(request: Request | null) {
+export async function GET(request: Request | "") {
   // 封装fetch symbol和资金费率
-  const fetchBinanceMarkPriceInfo = async (): Promise<
-    BinanceMarkPriceData[] | BinanceMarkPriceData | string
-  > => {
-    const RES = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex`, {
-      next: { revalidate: 60 },
-    });
+  const fetchBinanceMarkPriceInfo = async (): Promise<BinanceMarkPriceData[] | string> => {
+    try {
+      const RES = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex`, {
+        cache: "no-store",
+      });
 
-    if (!RES.ok) return "Fetch Binance Mark Price Failed";
+      if (!RES.ok) throw new Error("Fetch Binance Mark Price Failed");
 
-    const DATA = await RES.json();
-    if (DATA.length === 0 || DATA.msg) return `Invalid symbol`;
+      const DATA = await RES.json();
 
-    return DATA;
+      if (DATA.length === 0 || DATA.msg) throw new Error(`Invalid symbol`);
+
+      return DATA;
+    } catch (error) {
+      if (error instanceof Error) return error.message;
+      throw error;
+    }
   };
 
   // 封装fetch 合约持仓量数据函数
   const fetchBinanceOpenInterestStatistics = async (
     symbol: string
   ): Promise<BinanceOpenInterestData[] | string> => {
-    const RES = await fetch(
-      `https://fapi.binance.com/futures/data/openInterestHist?symbol=${symbol}&period=5m&limit=289`,
-      {
-        next: { revalidate: 60 },
-      }
-    );
+    try {
+      const RES = await fetch(
+        `https://fapi.binance.com/futures/data/openInterestHist?symbol=${symbol}&period=5m&limit=289`,
+        {
+          cache: "no-store",
+        }
+      );
 
-    if (!RES.ok) return `Fetch Binance Open Interest Statistics Failed`;
+      if (!RES.ok) throw new Error(`Fetch Binance Open Interest Statistics Failed`);
 
-    const data = await RES.json();
+      const DATA = await RES.json();
 
-    if (Array.isArray(data) && data.length === 0) return `Not Found the symbol`;
+      if (Array.isArray(DATA) && DATA.length === 0) throw new Error(`Not Found the symbol`);
 
-    if (!Array.isArray(data)) return `Symbol Is Necessary`;
+      if (!Array.isArray(DATA)) throw new Error(`Symbol Is Necessary`);
 
-    return data;
+      return DATA;
+    } catch (error) {
+      if (error instanceof Error) return error.message;
+      throw error;
+    }
   };
 
   // 将时间戳转换成UTC+8时间
@@ -64,7 +73,7 @@ export async function GET(request: Request | null) {
     return date.toLocaleString("zh-CN", { timeZone: tzString });
   };
 
-  const MARK_PRICE_INFO = (await fetchBinanceMarkPriceInfo()) as string | BinanceMarkPriceData[];
+  const MARK_PRICE_INFO = await fetchBinanceMarkPriceInfo();
 
   if (typeof MARK_PRICE_INFO === "string")
     return NextResponse.json({ msg: MARK_PRICE_INFO }, { status: 400 });
@@ -111,7 +120,7 @@ export async function GET(request: Request | null) {
       { status: 204 }
     );
 
-  return NextResponse.json(HIGH_GROWTH_TOKEN, { status: 200 });
+  return NextResponse.json(HIGH_GROWTH_TOKEN as HighGrowthTokenData[], { status: 200 });
 }
 
 // POST
@@ -130,18 +139,23 @@ export async function POST(request: Request) {
 
   // 封装 fetch lark机器人
   const postLarkHandler = async (data: PostLarkData) => {
-    const RES = await fetch(process.env.LARK_HOOK_URL as string, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+    try {
+      const RES = await fetch(process.env.LARK_HOOK_URL as string, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
-    if (!RES.ok) return "Post Data to Lark Failed";
+      if (!RES.ok) throw new Error("Post Data to Lark Failed");
 
-    const DATA = await RES.json();
-    return DATA;
+      const DATA = await RES.json();
+      return DATA;
+    } catch (error) {
+      if (error instanceof Error) return error.message;
+      throw error;
+    }
   };
 
   const RES = await GET(request);

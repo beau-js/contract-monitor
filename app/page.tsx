@@ -2,7 +2,7 @@
  * @Author: beau beau.js@outlook.com
  * @Date: 2023-10-26 15:39:26
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-26 15:41:55
+ * @LastEditTime: 2023-10-26 17:25:27
  * @FilePath: /workspace/contract-monitor/app/page.tsx
  * @Description:
  *
@@ -28,9 +28,8 @@ const Home = async () => {
   type HighGrowthTokenData = BinanceMarkPriceData &
     BinanceOpenInterestData & { contractPositionGrowth: string };
 
-  const RES = await GET(null);
+  const RES = await GET("");
   const DATA: HighGrowthTokenData[] | { msg: string } = await RES.json();
-  console.log(DATA);
 
   if ("msg" in DATA)
     return (
