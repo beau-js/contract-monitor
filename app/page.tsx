@@ -2,7 +2,7 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-22 03:11:31
+ * @LastEditTime: 2023-10-26 15:25:12
  * @FilePath: /workspace/contract-monitor-dev/app/page.tsx
  * @Description:
  *
@@ -10,6 +10,8 @@
  */
 
 // app/page.tsx
+import { GET } from "./api/contracts/route";
+
 const Home = async () => {
   interface BinanceMarkPriceData {
     symbol: string;
@@ -25,13 +27,11 @@ const Home = async () => {
   }
 
   type HighGrowthTokenData = BinanceMarkPriceData &
-    BinanceOpenInterestData & { contractPositionGrowth: number };
+    BinanceOpenInterestData & { contractPositionGrowth: string };
 
-  const RES = await fetch(`https://contract-monitor.vercel.app/api/contracts`, {
-    next: { revalidate: 60 },
-  });
-
+  const RES = await GET(null);
   const DATA: HighGrowthTokenData[] | { msg: string } = await RES.json();
+  console.log(DATA);
 
   if ("msg" in DATA)
     return (
@@ -53,7 +53,7 @@ const Home = async () => {
           sumOpenInterestValue,
           timestamp,
         }) => (
-          <ul className="m-6">
+          <ul key={symbol} className="m-6">
             <li>交易对: {symbol}</li>
             <li>标记价格：{markPrice}</li>
             <li>资金费率：{lastFundingRate}</li>
