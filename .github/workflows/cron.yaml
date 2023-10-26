@@ -12,7 +12,7 @@ jobs:
         if: github.ref == 'refs/heads/dev'
         uses: fjogeleit/http-request-action@master
         with:
-          url: "https://contract-monitor.vercel.app/"
+          url: "https://contract-monitor.vercel.app/api/contracts"
           method: "POST"
           data: ${{ secrets.POST_LARK_TOKEN }}
           headers: '{"Content-Type": "application/json"}'
