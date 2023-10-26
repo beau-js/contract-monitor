@@ -2,7 +2,7 @@
  * @Author: pg-beau pg.beau@outlook.com
  * @Date: 2023-07-28 15:43:04
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-26 18:55:06
+ * @LastEditTime: 2023-10-26 19:18:41
  * @FilePath: /workspace/contract-monitor-dev/app/page.tsx
  * @Description:
  *
@@ -10,25 +10,10 @@
  */
 
 // app/page.tsx
+import { HighGrowthTokenData } from "@/types/cryptoPairs";
 import { GET } from "./api/high-growth-token/route";
 
 const Home = async () => {
-  interface BinanceMarkPriceData {
-    symbol: string;
-    markPrice: string;
-    lastFundingRate: string;
-  }
-
-  interface BinanceOpenInterestData {
-    symbol: string;
-    sumOpenInterest: string;
-    sumOpenInterestValue: string;
-    timestamp: number;
-  }
-
-  type HighGrowthTokenData = BinanceMarkPriceData &
-    BinanceOpenInterestData & { contractPositionGrowth: string };
-
   const RES = await GET("");
   const DATA: HighGrowthTokenData[] | { msg: string } = await RES.json();
 

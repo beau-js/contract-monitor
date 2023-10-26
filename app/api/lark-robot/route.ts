@@ -1,27 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { GET as getHighGrowthToken } from "@/app/api/high-growth-token/route";
 import { HighGrowthTokenData } from "@/types/cryptoPairs";
 
-export async function GET(request: Request) {
-  // 验证
-  const data = await request.json();
-  if (data.name !== "beau" || data.pwd !== process.env.BEAU_PWD)
-    return NextResponse.json({ msg: "Invalid Token" });
+export async function GET(request: NextRequest) {
+  // 验证secret
+  const secret = request.nextUrl.searchParams.get("secret");
+
+  if (secret !== process.env.BEAU_SECRET_TOKEN)
+    return NextResponse.json({ msg: "Invalid Secret Token" });
 
   interface PostLarkData {
     msg_type: string;
     content: {
       text: string;
     };
-  }
-
-  interface HIGH_GROWTH_TOKEN {
-    symbol: string;
-    markPrice: string;
-    lastFundingRate: string;
-    contractPositionGrowth: string;
-    sumOpenInterestValue: string;
-    timestamp: string;
   }
 
   // 封装 fetch lark机器人
