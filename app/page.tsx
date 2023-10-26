@@ -31,7 +31,6 @@ const Home = async () => {
 
   const RES = await GET("");
   const DATA: HighGrowthTokenData[] | { msg: string } = await RES.json();
-  console.log(DATA);
 
   if ("msg" in DATA)
     return (

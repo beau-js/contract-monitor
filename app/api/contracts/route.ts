@@ -23,7 +23,7 @@ export async function GET(request: Request | "") {
     BinanceMarkPriceData[] | BinanceMarkPriceData | string
   > => {
     const RES = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 0 },
     });
 
     if (!RES.ok) return "Fetch Binance Mark Price Failed";
@@ -41,7 +41,7 @@ export async function GET(request: Request | "") {
     const RES = await fetch(
       `https://fapi.binance.com/futures/data/openInterestHist?symbol=${symbol}&period=5m&limit=289`,
       {
-        next: { revalidate: 60 },
+        next: { revalidate: 0 },
       }
     );
 
