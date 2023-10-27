@@ -8,5 +8,5 @@ jobs:
   send-request:
     runs-on: ubuntu-latest
     steps:
-      - name: Send GET request to nextjs api
-        run: curl https://your-nextjs-api-url.com
+      - name: Send GET request to lark robot api
+        run: curl ${{secrets.LARK_ROBOT_URL}}
