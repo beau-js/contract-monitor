@@ -2,8 +2,8 @@
  * @Author: beau beau.js@outlook.com
  * @Date: 2023-10-26 15:39:26
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-26 19:21:40
- * @FilePath: /workspace/contract-monitor/app/page.tsx
+ * @LastEditTime: 2023-10-27 12:08:54
+ * @FilePath: /workspace/contract-monitor-dev/app/page.tsx
  * @Description:
  *
  * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
@@ -38,9 +38,9 @@ const Home = async () => {
         }) => (
           <ul key={symbol} className="m-6">
             <li>交易对: {symbol}</li>
-            <li>标记价格：{markPrice}</li>
             <li>资金费率：{lastFundingRate}</li>
             <li>24H合约持仓增长率: {contractPositionGrowth}</li>
+            <li>标记价格：{markPrice}</li>
             <li>合约持仓价值: {sumOpenInterestValue}</li>
             <li>数据更新时间: {timestamp}</li>
           </ul>

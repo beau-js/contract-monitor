@@ -2,7 +2,7 @@
  * @Author: beau beau.js@outlook.com
  * @Date: 2023-10-17 13:48:20
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-26 20:16:47
+ * @LastEditTime: 2023-10-27 12:19:29
  * @FilePath: /workspace/contract-monitor-dev/app/api/high-growth-token/route.ts
  * @Description:
  *
@@ -19,7 +19,8 @@ export async function GET(request: Request | "") {
   const fetchBinanceMarkPriceInfo = async (): Promise<BinanceMarkPriceData[] | string> => {
     try {
       const RES = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex`, {
-        cache: "no-store",
+        // cache: "no-store",
+        next: { revalidate: 60 },
       });
 
       if (!RES.ok) throw new Error("Fetch Binance Mark Price Failed");
@@ -43,7 +44,8 @@ export async function GET(request: Request | "") {
       const RES = await fetch(
         `https://fapi.binance.com/futures/data/openInterestHist?symbol=${symbol}&period=5m&limit=289`,
         {
-          cache: "no-store",
+          // cache: "no-store",
+          next: { revalidate: 60 },
         }
       );
 
@@ -88,22 +90,20 @@ export async function GET(request: Request | "") {
         const LATEST_OPEN_INTEREST_STATISTICS = OPEN_INTEREST_DATA[OPEN_INTEREST_DATA.length - 1];
 
         const OPEN_INTEREST_POSITION_GROWTH_RATE =
-          (Number(LATEST_OPEN_INTEREST_STATISTICS.sumOpenInterestValue) -
-            Number(OLDEST_OPEN_INTEREST_STATISTICS.sumOpenInterestValue)) /
-          Number(OLDEST_OPEN_INTEREST_STATISTICS.sumOpenInterestValue);
+          (parseFloat(LATEST_OPEN_INTEREST_STATISTICS.sumOpenInterestValue) -
+            parseFloat(OLDEST_OPEN_INTEREST_STATISTICS.sumOpenInterestValue)) /
+          parseFloat(OLDEST_OPEN_INTEREST_STATISTICS.sumOpenInterestValue);
 
         if (OPEN_INTEREST_POSITION_GROWTH_RATE < 0.4) return null;
 
         return {
           symbol,
-          lastFundingRate: (Number(lastFundingRate) * 100).toFixed(4) + "%",
-          contractPositionGrowth:
-            (Number(OPEN_INTEREST_POSITION_GROWTH_RATE) * 100).toFixed(2) + "%",
-          markPrice: Number(markPrice).toFixed(4),
-          sumOpenInterest: Number(LATEST_OPEN_INTEREST_STATISTICS.sumOpenInterest).toFixed(4),
-          sumOpenInterestValue: Number(
-            LATEST_OPEN_INTEREST_STATISTICS.sumOpenInterestValue
-          ).toFixed(2),
+          lastFundingRate: (parseFloat(lastFundingRate) * 100).toFixed(4) + "%",
+          contractPositionGrowth: (OPEN_INTEREST_POSITION_GROWTH_RATE * 100).toFixed(2) + "%",
+          markPrice: parseFloat(markPrice).toFixed(4),
+          sumOpenInterest: parseFloat(LATEST_OPEN_INTEREST_STATISTICS.sumOpenInterest).toFixed(4),
+          sumOpenInterestValue:
+            parseFloat(LATEST_OPEN_INTEREST_STATISTICS.sumOpenInterestValue).toFixed(2) + " USDT",
           timestamp: convertTZ(LATEST_OPEN_INTEREST_STATISTICS.timestamp, "Asia/Shanghai"),
         };
       })
@@ -116,14 +116,12 @@ export async function GET(request: Request | "") {
       { msg: `No Pairs Meet The Contract Position Growth Rate Condition` },
       { status: 204 }
     );
-  // 按资金费率升序
+  // 按资金费率绝对值升序
   HIGH_GROWTH_TOKEN.sort((a, b) => {
-    const VALUE_1 = Number(a.lastFundingRate.slice(0, -1));
-    const VALUE_2 = Number(b.lastFundingRate.slice(0, -1));
+    const VALUE_1 = Math.abs(parseFloat(a.lastFundingRate));
+    const VALUE_2 = Math.abs(parseFloat(b.lastFundingRate));
     return VALUE_2 - VALUE_1;
   });
 
   return NextResponse.json(HIGH_GROWTH_TOKEN as HighGrowthTokenData[], { status: 200 });
 }
-
-// POST
