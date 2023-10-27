@@ -1,3 +1,13 @@
+/*
+ * @Author: beau beau.js@outlook.com
+ * @Date: 2023-10-26 19:21:11
+ * @LastEditors: beau beau.js@outlook.com
+ * @LastEditTime: 2023-10-26 21:18:09
+ * @FilePath: /workspace/contract-monitor/app/api/lark-robot/route.ts
+ * @Description:
+ *
+ * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { GET as getHighGrowthToken } from "@/app/api/high-growth-token/route";
 import { HighGrowthTokenData } from "@/types/cryptoPairs";

@@ -1,15 +1,12 @@
-name: Send HTTP request to website
+name: Send request to website
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/15 * * * *" # every 15 minutes
 
 jobs:
-  trigger-function:
+  send-request:
     runs-on: ubuntu-latest
     steps:
-      - name: HTTP Request Action
-        if: github.ref == 'refs/heads/main'
-        uses: fjogeleit/http-request-action@master
-        with:
-          url: "${{secrets.LARK_ROBOT_URL}}"
+      - name: Send GET request to nextjs api
+        run: curl https://your-nextjs-api-url.com
