@@ -2,11 +2,11 @@ name: Send request to website
 
 on:
   schedule:
-    - cron: "*/15 * * * *" # every 15 minutes
+    - cron: "0,15,30,45 * * * *" # every 15 minutes
 
 jobs:
   send-request:
     runs-on: ubuntu-latest
     steps:
       - name: Send GET request to lark robot api
-        run: curl ${{secrets.LARK_ROBOT_URL}}
+        run: curl -s -o /dev/null -w %{http_code} "${{ secrets.LARK_ROBOT_URL }}"
