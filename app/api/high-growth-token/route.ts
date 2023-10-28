@@ -2,8 +2,8 @@
  * @Author: beau beau.js@outlook.com
  * @Date: 2023-10-17 13:48:20
  * @LastEditors: beau beau.js@outlook.com
- * @LastEditTime: 2023-10-27 12:19:29
- * @FilePath: /workspace/contract-monitor-dev/app/api/high-growth-token/route.ts
+ * @LastEditTime: 2023-10-28 19:12:13
+ * @FilePath: /workspace/contract-monitor/app/api/high-growth-token/route.ts
  * @Description:
  *
  * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
@@ -19,8 +19,8 @@ export async function GET(request: Request | "") {
   const fetchBinanceMarkPriceInfo = async (): Promise<BinanceMarkPriceData[] | string> => {
     try {
       const RES = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex`, {
-        // cache: "no-store",
-        next: { revalidate: 60 },
+        cache: "no-store",
+        // next: { revalidate: 60 },
       });
 
       if (!RES.ok) throw new Error("Fetch Binance Mark Price Failed");
@@ -44,8 +44,8 @@ export async function GET(request: Request | "") {
       const RES = await fetch(
         `https://fapi.binance.com/futures/data/openInterestHist?symbol=${symbol}&period=5m&limit=289`,
         {
-          // cache: "no-store",
-          next: { revalidate: 60 },
+          cache: "no-store",
+          // next: { revalidate: 60 },
         }
       );
 
